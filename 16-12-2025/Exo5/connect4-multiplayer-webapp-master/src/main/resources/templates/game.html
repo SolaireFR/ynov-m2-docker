@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script th:src="@{/js/Game.js}"></script>
+    <script th:src="@{/js/Util.js}"></script>
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/my-styles.css}">
+    <meta charset="UTF-8">
+    <title>Connect-4</title>
+</head>
+
+
+<body class="bg-dark">
+
+    <header>
+        <div class="border text-light text-center py-3 bg-gradient" style="width: auto">
+            <h2 class="text-light fw-lighter"> <span id="player1Name"></span>  -  <span id="player2Name"></span> </h2>
+            <h6 class="text-light fw-light">GameID: <span id="gameID"></span></h6>
+        </div>
+    </header>
+
+    <script>
+
+        // Get gameID param
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get("gameID");
+
+        const socket = new SockJS("/connect-endpoint");
+        const stompClient = Stomp.over(socket);
+
+        function subscribeToGame() {
+            // Subscribe to player connect endpoint
+            stompClient.subscribe("/topic/connect/" + document.getElementById("gameID").innerHTML, function (gameMessage){
+                const data = JSON.parse(gameMessage.body);
+                // Update player2 tag
+                document.getElementById("player2Name").innerHTML = data["player"];
+
+            })
+
+
+            // Subscribe to make move endpoint
+            stompClient.subscribe("/topic/makeMove/" + document.getElementById("gameID").innerHTML, function (gameState){
+                const data = JSON.parse(gameState.body);
+
+                const gameBoard = document.getElementById("game-board");
+
+                if(!data["specialCase"]){
+                    // Update game state
+                    updateGameState(data, gameBoard);
+                } else{
+                    const specialCase = data["specialCase"];
+                    console.log(data);
+                    switch(specialCase) {
+                        case "PLAYER_WIN":
+                            alert(data["lastPlayedUsername"] + " has won the game!");
+                            endGame();
+                            break;
+                        case "PLAYER_FORFEIT":
+                            alert(data["lastPlayedUsername"] + " has won the game!");
+                        case "GAME_DRAW":
+                            alert("Game ended in a draw!");
+                            endGame();
+                            break;
+                    }
+                }
+            })
+        }
+
+        // Connect to SockJS socket
+        stompClient.connect({}, function (){
+            console.log("Established stomp connection")
+
+            // Subscribe to the game once the connection is established
+            subscribeToGame();
+
+            // Verify that the player can join the game
+            if(gameId){
+
+                let data = {
+                    playerID: getPlayerIDFromCookie(),
+                    gameID: gameId
+                };
+
+                postJson("/game/verify", data)
+                    .then(result => {
+                        if(result === "GAME_IS_VALID"){
+                            postJson("/game/connect", data)
+                                .then(response => {
+                                    updateNames(response);
+                                    subscribeToGame();
+                                })
+                        } else{
+                            document.location.replace("/")
+                            alert(result);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+
+                // Create a new game
+            } else{
+                postText("/game/create", getPlayerIDFromCookie())
+                    .then(response => {
+                        updateNames(response);
+                        // Subscribe to the game after the game ID is updated
+                        subscribeToGame();
+                    })
+            }
+        })
+
+    </script>
+
+    <div class="py-5 px-4">
+
+        <div class="container-fluid border p-3">
+
+            <table id="game-board" class="table text-center">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+
+            <script th:src="@{/js/GameBoard.js}"></script>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

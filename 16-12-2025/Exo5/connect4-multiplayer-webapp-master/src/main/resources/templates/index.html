@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script th:src="@{/js/Game.js}"></script>
+    <script th:src="@{/js/Util.js}"></script>
+    <script th:src="@{/js/HomePage.js}"></script>
+    <script th:src="@{/js/PlayerAuth.js}"></script>
+    <script>document.addEventListener('DOMContentLoaded', loadLeaderboard)</script>
+    <link rel="stylesheet" th:href="@{/css/my-styles.css}">
+    <meta charset="UTF-8">
+    <title>Connect4</title>
+</head>
+
+
+<body class="bg-dark">
+
+    <header class="py-0">
+        <div class="p-5 p-lg-4 bg-gradient bg-danger border border-light">
+            <div class="container px-lg-5 align-content-md-center">
+                <h1 class="display-5 fw-bold text-lg-center text-light">Connect-4</h1>
+                <h6 class="text-md-center text-black text-opacity-75">Educational Project by Spring-0</h6>
+            </div>
+        </div>
+    </header>
+
+    <!--
+     Navigation Bar
+    !-->
+    <section class="py-0">
+        <div class="text-light nav bg-success nav-item-border nav-fill" id="navbar">
+            <a class="nav-item nav-link" href="/profile">My Profile</a>
+            <a class="nav-item nav-link" onclick="createNewGame()">Create Game</a>
+            <a class="nav-item nav-link" onclick="showGameOptionPopup()">Join Game</a>
+            <a class="nav-link nav-item" href="/login" id="login-anchor">Login</a>
+            <a class="nav-link nav-item" href="/register" id="register-anchor">Register</a>
+        </div>
+
+        <div class="container py-4 text-light">
+            <div class="row">
+                <div class="col">
+                    <div class="card bg-dark text-light border-1 border-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Leaderboard</h5>
+                            <table class="table table-striped">
+                                <tbody id="leaderboard-tbody">
+                                <tr>
+                                    <th>Username</th>
+                                    <td>Games Played</td>
+                                    <td>Wins</td>
+                                    <td>Losses</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

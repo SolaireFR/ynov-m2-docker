@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sudoku-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: eq0144au
+      MYSQL_DATABASE: sudoku
+    ports:
+      - "3307:3306" # Changement ici : port hôte 3307
+    volumes:
+      - db_data:/var/lib/mysql
+
+  springboot-test:
+    image: maven:3.9.6-eclipse-temurin-17
+    container_name: springboot-maven-test
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    command: mvn spring-boot:run
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+volumes:
+  db_data:
